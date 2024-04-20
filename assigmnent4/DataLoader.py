@@ -88,14 +88,15 @@ class C4DataSet():
         winner = self.winner_options[game[-1]]
         
         samples = []
-        board   = torch.zeros([2, 6, 7], dtype=torch.int32)
+        board   = torch.zeros([2, 6, 8], dtype=torch.float32)
+
         cnt     = torch.zeros([7], dtype=torch.int32)
         for i in range(1, len(game)-1):
             turn = (i-1) % 2
             col = int(game[i])
             row = 6 - 1 - cnt[col]
             
-            board[turn][row][col] = 1 
+            board[turn][row][col] = 1.0 
             cnt[col] += 1
 
             if i > treshold:
@@ -103,7 +104,7 @@ class C4DataSet():
         return samples
 
     def create_data_set(self):
-        """dataset - lista tupli, pojdeyńczy typel to [0] - tensor o kształcie [2, 6, 7]; [1] - int """
+        """dataset - lista tupli, pojdeyńczy typel to [0] - tensor o kształcie [2, 6, 8]; [1] - int  (pusta kolumna zeby było parzyście!)"""
         data_set = []
         with open('games3.txt', 'r') as f:
             for i, line in enumerate(f):
