@@ -3,6 +3,10 @@ from copy import deepcopy
 import random
 import sys
 
+from network_for_c4 import * 
+
+import torch 
+
 DX = 7
 DY = 6
 STRENGTH = 10
@@ -40,6 +44,52 @@ class AgentMinMaxMC:
     
     def best_move(self, b):
         return b.best_move(self.level, self.n_of_rollouts)
+    
+def fun_function(x):
+    return [1, 2, 3]
+
+class AgentNetwork:
+    def __init__(self) -> None:
+        self.name = 'NeuralNetwork'
+        self.model = find_network()
+        self.model.eval()
+
+    def best_move(self, b):
+        potential_moves = b.moves()
+
+        best_move, best_value = potential_moves[0], 0 
+        for move in potential_moves:
+            b.apply_move(move)
+            board_after_move = self.encode_board(b.board)
+            b.undo_move(move)
+
+            with torch.no_grad():
+                x = torch.tensor(board_after_move)
+                x = x[None, :, :, :]
+
+                out = self.model(x)
+                value_for_this_move = out[0][1].item()
+
+            if value_for_this_move > best_value:
+                best_move  = move
+                best_value = value_for_this_move
+        return best_move       
+
+    def encode_board(self, b):
+        """!!! WAŻNE ZAŁOŻENIE !!! - zakładam że jako 1 gracz zaczynam i moje monety sa w polach oznaczonych przez +1 """
+        encoded_board = torch.zeros([2, 6, 8])
+        for y in range(DY):
+            for x in range(DX):
+                #  pole planszy 
+                who = b[y][x]
+                
+                if who == 1: 
+                    who = 0
+                else:
+                    who = 1
+
+                encoded_board[who][6-1-y][x] = 1
+        return encoded_board
         
     
 class Board:

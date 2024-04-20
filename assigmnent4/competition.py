@@ -1,7 +1,14 @@
+from imp import reload
+import c4 
+reload(c4)
+
 from c4 import Board
-from c4 import AgentRandom, AgentMinMaxMC, AgentMC
+from c4 import AgentRandom, AgentMinMaxMC, AgentMC, AgentNetwork
 
 def game(agent_a, agent_b):
+    """zwraca 1  - jeśli gracz, który jako pierwszy wykonywał ruch WYGRAŁ 
+       zwraca -1 - jeśli gracz, który jako drugi wykonywał ruch WYGRAŁ """
+    
     b = Board()
     agents = [agent_a, agent_b]
     moves = []
@@ -22,12 +29,14 @@ def game(agent_a, agent_b):
     
 def duel(agent_a, agent_b, N):
     score = {1:0, -1:0, 0:0}
+    """score[+1] - wynik agenta A 
+       score[-1] - wynik agenta B  (liczba wygranych pojedynków)"""
     
     for i in range(N):
         r1 = game(agent_a, agent_b)
         score[r1] += 1
-        r2 = game(agent_b, agent_a)
-        score[-r2] += 1
+        # r2 = game(agent_b, agent_a)
+        # score[-r2] += 1
     
     s = sum(score.values())
     
@@ -37,9 +46,13 @@ def duel(agent_a, agent_b, N):
     
     
 if __name__ == '__main__':
-    A = AgentRandom()
+
+    A = AgentNetwork()
+    B = AgentRandom()
+
+    # A = AgentRandom()
     #A = AgentMC(50)    
     #B = AgentMC(10)
-    B = AgentMinMaxMC(3,10)
+    # B = AgentMinMaxMC(3,10)
     
-    duel(A, B, 1)    
+    duel(A, B, 10)    
