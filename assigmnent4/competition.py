@@ -55,4 +55,4 @@ if __name__ == '__main__':
     #B = AgentMC(10)
     # B = AgentMinMaxMC(3,10)
     
-    duel(A, B, 10)    
+    duel(A, B, 400)    

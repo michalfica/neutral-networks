@@ -59,6 +59,10 @@ class AgentNetwork:
 
         best_move, best_value = potential_moves[0], 0 
         for move in potential_moves:
+
+            if b.is_winning(move):
+                return move
+            
             b.apply_move(move)
             board_after_move = self.encode_board(b.board)
             b.undo_move(move)
@@ -77,7 +81,7 @@ class AgentNetwork:
 
     def encode_board(self, b):
         """!!! WAŻNE ZAŁOŻENIE !!! - zakładam że jako 1 gracz zaczynam i moje monety sa w polach oznaczonych przez +1 """
-        encoded_board = torch.zeros([2, 6, 8])
+        encoded_board = torch.zeros([2, 6, 7])
         for y in range(DY):
             for x in range(DX):
                 #  pole planszy 

@@ -77,18 +77,27 @@ class C4DataSet():
         self.number_of_games = number_of_games
         # UWAGA ! OKAZUJE SIĘ ZE:  A - czyli drugi gracz, B - pierwszy gracz gdy narsyowałem przykłady 
         self.winner_options = {
-                    "A" : 2, 
-                    "B" : 1,
-                    "D" : 0 
+                    "A" : 1, 
+                    "B" : 0,
+                    "D" : -1  # remis - który olewam 
                 }
 
     def create_data_samples(self, game, k):
-        """zostanie zapisanych ostatnich k stanów gry"""        
-        treshold   = len(game)- 2 - k
+        """zostanie zapisanych ostatnich k stanów gry
+            if k == 'all' <- wtedy wszystkie ruchy zapamietuje z danej rozgrywki """
+        # UWAGA: pomijam (olewam) rozgrywki ,w których był remis
+
+        if k == "all":
+            treshold = -1
+        else:      
+            treshold   = len(game)- 2 - k
         winner = self.winner_options[game[-1]]
         
+        if winner == -1:
+            return []
+        
         samples = []
-        board   = torch.zeros([2, 6, 8], dtype=torch.float32)
+        board   = torch.zeros([2, 6, 7], dtype=torch.float32)
 
         cnt     = torch.zeros([7], dtype=torch.int32)
         for i in range(1, len(game)-1):
@@ -103,12 +112,20 @@ class C4DataSet():
                 samples.append((board.detach().clone(), winner)) 
         return samples
 
-    def create_data_set(self):
-        """dataset - lista tupli, pojdeyńczy typel to [0] - tensor o kształcie [2, 6, 8]; [1] - int  (pusta kolumna zeby było parzyście!)"""
+    def create_data_samples_features(self, game, k):
+        return []
+    
+
+    
+    def create_data_set(self, task_nr=1):
+        """dataset - lista tupli, pojdeyńczy typel to [0] - tensor o kształcie [2, 6, 7]; [1] - int """
         data_set = []
         with open('games3.txt', 'r') as f:
             for i, line in enumerate(f):
                 if i > self.number_of_games-1: 
                     break 
-                data_set.extend(self.create_data_samples(line.strip(), k=self.moves))
+                if task_nr==1:
+                    data_set.extend(self.create_data_samples(line.strip(), k=self.moves))
+                else:
+                    data_set.extend(self.create_data_samples_features(line.strip(), k=self.moves))
         return data_set
