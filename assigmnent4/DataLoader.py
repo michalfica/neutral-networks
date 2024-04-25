@@ -91,6 +91,7 @@ class C4DataSet():
             treshold = -1
         else:      
             treshold   = len(game)- 2 - k
+
         winner = self.winner_options[game[-1]]
         
         if winner == -1:
@@ -113,10 +114,43 @@ class C4DataSet():
         return samples
 
     def create_data_samples_features(self, game, k):
-        return []
+        if k == "all":
+            treshold = -1
+        else:      
+            treshold   = len(game)- 2 - k
+            
+        winner = self.winner_options[game[-1]]
+        if winner == -1:
+            return []
+        
+        samples = []
+        board   = torch.zeros([6, 7], dtype=torch.float32)
+        cnt     = torch.zeros([7], dtype=torch.int32)
+        for i in range(1, len(game)-1):
+            turn = (i-1) % 2 + 1 # czyja tura 1 - pierwszego gracza (tego który zaczynał), 2 - drygiegi gracza (wykonywał ruch jako drugi)
+            col = int(game[i])
+            row = 6 - 1 - cnt[col]
+
+            board[row][col] = turn 
+            cnt[col] += 1 
+
+            # próbka - narazie ma rozmiar 2 
+            # 1 współrzędna = czy zakończył rozgrywkę
+            # 2 współrzędna = czyj ruch 
+
+            sample = torch.zeros([2], dtype=torch.float32)
+
+            if i == len(game)-2: 
+                sample[0] = 1
+            
+            sample[1] = i % 2 + 1
+
+            if i > treshold:
+                samples.append((sample.detach().clone(), winner)) 
+        return samples
     
 
-    
+
     def create_data_set(self, task_nr=1):
         """dataset - lista tupli, pojdeyńczy typel to [0] - tensor o kształcie [2, 6, 7]; [1] - int """
         data_set = []
