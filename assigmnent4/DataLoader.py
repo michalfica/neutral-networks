@@ -167,6 +167,24 @@ class C4DataSet():
                     print(f"hole in {i}, {j}")
         return holes 
     
+    def compute_catty_corner_holes(self, board, winner):
+        holes = 0 
+        #  dziury po skosie na prawo
+        for i in range(3,6):
+            for j in range(0,4):
+                if ((board[i][j]==winner+1 and board[i-1][j+1]==winner+1 and board[i-2][j+2]==0 and board[i-3][j+3]==winner+1) or
+                    (board[i][j]==winner+1 and board[i-1][j+1]==0 and board[i-2][j+2]==winner+1 and board[i-3][j+3]==winner+1)):
+                    holes += 1 
+                    print(f"hole skos prawo {i}, {j}")
+        # trójki po skosie na lewo 
+        for i in range(3,6):
+            for j in range(3,7):
+                if ((board[i][j]==winner+1 and board[i-1][j-1]==winner+1 and board[i-2][j-2]==0 and board[i-3][j-3]==winner+1) or
+                    (board[i][j]==winner+1 and board[i-1][j-1]==0 and board[i-2][j-2]==winner+1 and board[i-3][j-3]==winner+1)):
+                    holes += 1 
+                    print(f"hole skos lewo {i}, {j}")
+        return holes 
+    
     def create_data_samples_features(self, game, k):
         if k == "all":
             treshold = -1
@@ -195,9 +213,9 @@ class C4DataSet():
             # 4 współ = liczba trójek w pionie, które da się przedłóżyć 
             # 5 współ = liczba trójek na skos, które da się przedłóżyć
             # 6 współ = liczba dziur między 1 a 2 lub 2 a 1 w pionie 
+            # 7 współ = liczba dziur między 1 a 2 lub 2 a 1 po skosie 
             
             # TO DO : 
-            # 7 współ = liczba dziur między 1 a 2 lub 2 a 1 po skosie 
             # 8 współ = liczba dwójek które da się przedłóżyć 
 
             sample = torch.zeros([8], dtype=torch.float32)
@@ -211,6 +229,7 @@ class C4DataSet():
             sample[3] = verti
             sample[4] = self.compute_catty_corner_triples(board, cnt, winner=winner)
             sample[5] = self.compute_verti_holes(board, winner=winner)
+            sample[6] = self.compute_catty_corner_holes(board, winner=winner)
 
             if i > treshold:
                 samples.append((sample.detach().clone(), winner)) 
