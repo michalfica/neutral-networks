@@ -122,8 +122,8 @@ class C4DataSet():
                     board[i][j+1]==winner+1 and 
                     board[i][j+2]==winner+1 and 
                     (cnt[j+3] < 6-i or (j>0 and cnt[j-1] < 6-i))):
-                    # print(f"horiz na wspoł = {i}, {j}")
                     horizontal += 1  
+                    print(f"hori {i}, {j}")
         vertical = 0 
         for j in range(7):
             for i in range(1,4):
@@ -132,10 +132,31 @@ class C4DataSet():
                     board[i+2][j]==winner +1 and 
                     cnt[j]==6-i):
                     vertical += 1 
-                    # print(f"verti na współ = {i}, {j}")
-                    # print(f"plansza: {board[i][j]}, {board[i+1][j]}, {board[i+2][j]}")
+                    print(f"verti {i}, {j}")
         return (horizontal, vertical)
-     
+    
+    def compute_catty_corner_triples(self, board, cnt, winner):
+        triples = 0 
+        #  trójki po skosie na prawo
+        for i in range(3,6):
+            for j in range(0,4):
+                if (board[i][j]==winner+1 and 
+                    board[i-1][j+1]==winner+1 and 
+                    board[i-2][j+2]==winner+1 and 
+                    cnt[j+3] <= 8-i):
+                    triples += 1 
+                    print(f"triple skos prawo {i}, {j}")
+        # trójki po skosie na lewo 
+        for i in range(3,6):
+            for j in range(3,7):
+                if (board[i][j]==winner+1 and 
+                    board[i-1][j-1]==winner+1 and 
+                    board[i-2][j-2]==winner+1 and 
+                    cnt[j-3] <= 8 - i):
+                    triples += 1 
+                    print(f"triple skos lewo {i}, {j}")
+        return triples 
+    
     def create_data_samples_features(self, game, k):
         if k == "all":
             treshold = -1
@@ -158,11 +179,18 @@ class C4DataSet():
             cnt[col] += 1 
 
             # próbka - narazie ma rozmiar 2 
-            # 1 współrzędna = czy zakończył rozgrywkę
-            # 2 współrzędna = czyj ruch 
-            # 3 współrzędna = liczba trójek w poziomie lub w pionie, które da się przedłóżyć 
+            # 1 współ = czy zakończył rozgrywkę
+            # 2 współ = czyj ruch 
+            # 3 współ = liczba trójek w poziomie, które da się przedłóżyć 
+            # 4 współ = liczba trójek w pionie, które da się przedłóżyć 
+            # 5 współ = liczba trójek na skos, które da się przedłóżyć
 
-            sample = torch.zeros([4], dtype=torch.float32)
+            # TO DO : 
+            # 6 współ = liczba dziur między 1 a 2 lub 2 a 1 w pionie 
+            # 7 współ = liczba dziur między 1 a 2 lub 2 a 1 po skosie 
+            # 8 współ = liczba dwójek które da się przedłóżyć 
+
+            sample = torch.zeros([8], dtype=torch.float32)
 
             if i == len(game)-2: 
                 sample[0] = 1
@@ -171,6 +199,7 @@ class C4DataSet():
             horiz, verti = self.compute_simple_triples(board, cnt, winner=winner) 
             sample[2] = horiz
             sample[3] = verti
+            sample[4] = self.compute_catty_corner_triples(board, cnt, winner=winner)
 
             if i > treshold:
                 samples.append((sample.detach().clone(), winner)) 
