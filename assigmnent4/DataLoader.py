@@ -185,6 +185,30 @@ class C4DataSet():
                     print(f"hole skos lewo {i}, {j}")
         return holes 
     
+    def compute_pairs(self, board, winner):
+        pairs = 0 
+        # w pionie 
+        for i in range(3, 6):
+            for j in range(7):
+                if board[i][j]==winner+1 and board[i-1][j]==winner+1 and board[i-2][j]==0:
+                    pairs += 1
+        # w poziomie
+        for i in range(6):
+            for j in range(4):
+                if board[i][j]==0 and board[i][j+1]==winner+1 and board[i][j+2]==winner+1 and board[i][j+3]==0:
+                    pairs += 1
+        # skos w prawo
+        for i in range(3,6):
+            for j in range(0,4):
+                if board[i][j]==winner+1 and board[i-1][j-1]==winner+1 and board[i-2][j-2]==0 and board[i-3][j-3]==0:
+                    pairs += 1 
+        # skos w lewo 
+        for i in range(3,6):
+            for j in range(3,7):
+                if board[i][j]==winner+1 and board[i-1][j-1]==winner+1 and board[i-2][j-2]==0 and board[i-3][j-3]==0:
+                    pairs += 1 
+        return pairs 
+    
     def create_data_samples_features(self, game, k):
         if k == "all":
             treshold = -1
@@ -206,7 +230,7 @@ class C4DataSet():
             board[row][col] = turn 
             cnt[col] += 1 
 
-            # próbka - narazie ma rozmiar 2 
+            # próbka - narazie ma rozmiar 8 
             # 1 współ = czy zakończył rozgrywkę
             # 2 współ = czyj ruch 
             # 3 współ = liczba trójek w poziomie, które da się przedłóżyć 
@@ -214,9 +238,10 @@ class C4DataSet():
             # 5 współ = liczba trójek na skos, które da się przedłóżyć
             # 6 współ = liczba dziur między 1 a 2 lub 2 a 1 w pionie 
             # 7 współ = liczba dziur między 1 a 2 lub 2 a 1 po skosie 
+            # 8 współ = liczba dwójek które da się przedłóżyć 
             
             # TO DO : 
-            # 8 współ = liczba dwójek które da się przedłóżyć 
+            # ?? 
 
             sample = torch.zeros([8], dtype=torch.float32)
 
@@ -230,6 +255,7 @@ class C4DataSet():
             sample[4] = self.compute_catty_corner_triples(board, cnt, winner=winner)
             sample[5] = self.compute_verti_holes(board, winner=winner)
             sample[6] = self.compute_catty_corner_holes(board, winner=winner)
+            sample[7] = self.compute_pairs(board, winner=winner)
 
             if i > treshold:
                 samples.append((sample.detach().clone(), winner)) 
