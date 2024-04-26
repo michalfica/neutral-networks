@@ -156,6 +156,16 @@ class C4DataSet():
                     triples += 1 
                     print(f"triple skos lewo {i}, {j}")
         return triples 
+
+    def compute_verti_holes(self, board, winner):
+        holes = 0 
+        for i in range(6):
+            for j in range(4):
+                if ((board[i][j]==winner+1 and board[i][j+1]==winner+1 and board[i][j+2]==0 and board[i][j+3]==winner+1) or
+                    (board[i][j]==winner+1 and board[i][j+1]==0 and board[i][j+2]==winner+1 and board[i][j+3]==winner+1)):
+                    holes += 1 
+                    print(f"hole in {i}, {j}")
+        return holes 
     
     def create_data_samples_features(self, game, k):
         if k == "all":
@@ -184,9 +194,9 @@ class C4DataSet():
             # 3 współ = liczba trójek w poziomie, które da się przedłóżyć 
             # 4 współ = liczba trójek w pionie, które da się przedłóżyć 
             # 5 współ = liczba trójek na skos, które da się przedłóżyć
-
-            # TO DO : 
             # 6 współ = liczba dziur między 1 a 2 lub 2 a 1 w pionie 
+            
+            # TO DO : 
             # 7 współ = liczba dziur między 1 a 2 lub 2 a 1 po skosie 
             # 8 współ = liczba dwójek które da się przedłóżyć 
 
@@ -200,6 +210,7 @@ class C4DataSet():
             sample[2] = horiz
             sample[3] = verti
             sample[4] = self.compute_catty_corner_triples(board, cnt, winner=winner)
+            sample[5] = self.compute_verti_holes(board, winner=winner)
 
             if i > treshold:
                 samples.append((sample.detach().clone(), winner)) 
