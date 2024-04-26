@@ -113,6 +113,29 @@ class C4DataSet():
                 samples.append((board.detach().clone(), winner)) 
         return samples
 
+
+    def compute_simple_triples(self, board, cnt, winner):
+        horizontal = 0 
+        for i in range(6):
+            for j in range(4):
+                if (board[i][j] == winner+1 and 
+                    board[i][j+1]==winner+1 and 
+                    board[i][j+2]==winner+1 and 
+                    (cnt[j+3] < 6-i or (j>0 and cnt[j-1] < 6-i))):
+                    # print(f"horiz na wspoł = {i}, {j}")
+                    horizontal += 1  
+        vertical = 0 
+        for j in range(7):
+            for i in range(1,4):
+                if (board[i][j]==winner+1 and 
+                    board[i+1][j]==winner +1 and 
+                    board[i+2][j]==winner +1 and 
+                    cnt[j]==6-i):
+                    vertical += 1 
+                    # print(f"verti na współ = {i}, {j}")
+                    # print(f"plansza: {board[i][j]}, {board[i+1][j]}, {board[i+2][j]}")
+        return (horizontal, vertical)
+     
     def create_data_samples_features(self, game, k):
         if k == "all":
             treshold = -1
@@ -137,18 +160,28 @@ class C4DataSet():
             # próbka - narazie ma rozmiar 2 
             # 1 współrzędna = czy zakończył rozgrywkę
             # 2 współrzędna = czyj ruch 
+            # 3 współrzędna = liczba trójek w poziomie lub w pionie, które da się przedłóżyć 
 
-            sample = torch.zeros([2], dtype=torch.float32)
+            sample = torch.zeros([4], dtype=torch.float32)
 
             if i == len(game)-2: 
                 sample[0] = 1
             
             sample[1] = i % 2 + 1
+            horiz, verti = self.compute_simple_triples(board, cnt, winner=winner) 
+            sample[2] = horiz
+            sample[3] = verti
 
             if i > treshold:
                 samples.append((sample.detach().clone(), winner)) 
+        print(f"board =\n {board}")
         return samples
     
+    def test_samples(self, game):
+        # game = "S331211565510B"
+        samples = self.create_data_samples_features(game, "all")
+        return samples
+
 
 
     def create_data_set(self, task_nr=1):
