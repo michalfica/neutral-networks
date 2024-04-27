@@ -3,7 +3,7 @@ import c4
 reload(c4)
 
 from c4 import Board
-from c4 import AgentRandom, AgentMinMaxMC, AgentMC, AgentNetwork
+from c4 import AgentRandom, AgentMinMaxMC, AgentMC, AgentNetwork, AgentSimpleNetwork
 
 def game(agent_a, agent_b):
     """zwraca 1  - jeśli gracz, który jako pierwszy wykonywał ruch WYGRAŁ 
@@ -47,7 +47,7 @@ def duel(agent_a, agent_b, N):
     
 if __name__ == '__main__':
 
-    A = AgentNetwork()
+    A = AgentSimpleNetwork()
     B = AgentRandom()
 
     # A = AgentRandom()

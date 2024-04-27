@@ -10,38 +10,38 @@ reload(DataLoader)
 from DataLoader import InMemDataLoader
 from DataLoader import C4DataSet
 
+# class Model(nn.Module):
+#     def __init__(self, dp=0.5):
+#         super(Model, self).__init__()
+#         self.conv1 = nn.Conv2d(2, 10, 4, padding=1)
+#         self.bn1 = nn.BatchNorm2d(10)
+#         self.conv2 = nn.Conv2d(10, 5, 3, padding=1)
+#         self.bn2 = nn.BatchNorm2d(5)
+
+#         self.fc1 = nn.Linear(5*5*6, 2)
+#         self.bn3 = nn.BatchNorm1d(2)
+#         # self.fc2 = nn.Linear(10, 3)
+#         self.do = nn.Dropout(0.45)
+
+#     def forward(self, x):
+#         x = self.conv1(x)
+#         x = F.relu(self.bn1(x))
+#         x = self.conv2(x)
+#         x = F.relu(self.bn2(x))
+
+#         x = x.view(x.shape[0], -1)
+
+#         x = self.fc1(x)
+#         # x = F.relu(self.bn3(x))
+#         x = self.do(x) # dropout
+#         # x = self.fc2(x)
+#         x = nn.Softmax()(x)
+#         return x
+
+#     def loss(self, Out, Targets):
+#       return F.cross_entropy(Out, Targets)
+
 class Model(nn.Module):
-    def __init__(self, dp=0.5):
-        super(Model, self).__init__()
-        self.conv1 = nn.Conv2d(2, 10, 4, padding=1)
-        self.bn1 = nn.BatchNorm2d(10)
-        self.conv2 = nn.Conv2d(10, 5, 3, padding=1)
-        self.bn2 = nn.BatchNorm2d(5)
-
-        self.fc1 = nn.Linear(5*5*6, 2)
-        self.bn3 = nn.BatchNorm1d(2)
-        # self.fc2 = nn.Linear(10, 3)
-        self.do = nn.Dropout(0.45)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = F.relu(self.bn1(x))
-        x = self.conv2(x)
-        x = F.relu(self.bn2(x))
-
-        x = x.view(x.shape[0], -1)
-
-        x = self.fc1(x)
-        # x = F.relu(self.bn3(x))
-        x = self.do(x) # dropout
-        # x = self.fc2(x)
-        x = nn.Softmax()(x)
-        return x
-
-    def loss(self, Out, Targets):
-      return F.cross_entropy(Out, Targets)
-
-class SimpleModel(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
         self.fc1 = nn.Linear(8, 25) # zamiast 2 wstawić 25 
@@ -65,8 +65,9 @@ class SimpleModel(nn.Module):
 
 
 def load_data(task=1):
-    amount_of_games = 2000 
+    amount_of_games = 20 
     moves_observed  = "all"
+    print(f"loaduje dane: {amount_of_games} - tyle gier")
 
     dataset = C4DataSet(amount_of_games, moves_observed).create_data_set(task_nr=task)
 
@@ -168,8 +169,10 @@ def find_network():
 
 
 def find_simple_network():
-    data_loaders = load_data(taks=2)
-    model = SimpleModel()
+    data_loaders = load_data(task=2)
+    model = Model()
     initialize_weights(model)
+    print("zaczynam trening")
     run_training(model, data_loaders=data_loaders)
+    print("trenonwanie - DONE")
     return model 

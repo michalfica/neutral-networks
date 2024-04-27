@@ -123,7 +123,7 @@ class C4DataSet():
                     board[i][j+2]==winner+1 and 
                     (cnt[j+3] < 6-i or (j>0 and cnt[j-1] < 6-i))):
                     horizontal += 1  
-                    print(f"hori {i}, {j}")
+                    # print(f"hori {i}, {j}")
         vertical = 0 
         for j in range(7):
             for i in range(1,4):
@@ -132,7 +132,7 @@ class C4DataSet():
                     board[i+2][j]==winner +1 and 
                     cnt[j]==6-i):
                     vertical += 1 
-                    print(f"verti {i}, {j}")
+                    # print(f"verti {i}, {j}")
         return (horizontal, vertical)
     
     def compute_catty_corner_triples(self, board, cnt, winner):
@@ -145,7 +145,7 @@ class C4DataSet():
                     board[i-2][j+2]==winner+1 and 
                     cnt[j+3] <= 8-i):
                     triples += 1 
-                    print(f"triple skos prawo {i}, {j}")
+                    # print(f"triple skos prawo {i}, {j}")
         # trójki po skosie na lewo 
         for i in range(3,6):
             for j in range(3,7):
@@ -154,7 +154,7 @@ class C4DataSet():
                     board[i-2][j-2]==winner+1 and 
                     cnt[j-3] <= 8 - i):
                     triples += 1 
-                    print(f"triple skos lewo {i}, {j}")
+                    # print(f"triple skos lewo {i}, {j}")
         return triples 
 
     def compute_verti_holes(self, board, winner):
@@ -164,7 +164,7 @@ class C4DataSet():
                 if ((board[i][j]==winner+1 and board[i][j+1]==winner+1 and board[i][j+2]==0 and board[i][j+3]==winner+1) or
                     (board[i][j]==winner+1 and board[i][j+1]==0 and board[i][j+2]==winner+1 and board[i][j+3]==winner+1)):
                     holes += 1 
-                    print(f"hole in {i}, {j}")
+                    # print(f"hole in {i}, {j}")
         return holes 
     
     def compute_catty_corner_holes(self, board, winner):
@@ -175,14 +175,14 @@ class C4DataSet():
                 if ((board[i][j]==winner+1 and board[i-1][j+1]==winner+1 and board[i-2][j+2]==0 and board[i-3][j+3]==winner+1) or
                     (board[i][j]==winner+1 and board[i-1][j+1]==0 and board[i-2][j+2]==winner+1 and board[i-3][j+3]==winner+1)):
                     holes += 1 
-                    print(f"hole skos prawo {i}, {j}")
+                    # print(f"hole skos prawo {i}, {j}")
         # trójki po skosie na lewo 
         for i in range(3,6):
             for j in range(3,7):
                 if ((board[i][j]==winner+1 and board[i-1][j-1]==winner+1 and board[i-2][j-2]==0 and board[i-3][j-3]==winner+1) or
                     (board[i][j]==winner+1 and board[i-1][j-1]==0 and board[i-2][j-2]==winner+1 and board[i-3][j-3]==winner+1)):
                     holes += 1 
-                    print(f"hole skos lewo {i}, {j}")
+                    # print(f"hole skos lewo {i}, {j}")
         return holes 
     
     def compute_pairs(self, board, winner):
@@ -230,7 +230,6 @@ class C4DataSet():
             board[row][col] = turn 
             cnt[col] += 1 
 
-            # próbka - narazie ma rozmiar 8 
             # 1 współ = czy zakończył rozgrywkę
             # 2 współ = czyj ruch 
             # 3 współ = liczba trójek w poziomie, które da się przedłóżyć 
@@ -259,15 +258,12 @@ class C4DataSet():
 
             if i > treshold:
                 samples.append((sample.detach().clone(), winner)) 
-        print(f"board =\n {board}")
+        # print(f"board =\n {board}")
         return samples
     
     def test_samples(self, game):
-        # game = "S331211565510B"
         samples = self.create_data_samples_features(game, "all")
         return samples
-
-
 
     def create_data_set(self, task_nr=1):
         """dataset - lista tupli, pojdeyńczy typel to [0] - tensor o kształcie [2, 6, 7]; [1] - int """

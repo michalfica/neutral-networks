@@ -4,6 +4,7 @@ import random
 import sys
 
 from network_for_c4 import * 
+from DataLoader import * 
 
 import torch 
 
@@ -93,6 +94,77 @@ class AgentNetwork:
                     who = 1
 
                 encoded_board[who][6-1-y][x] = 1
+        return encoded_board
+
+class AgentSimpleNetwork:
+    def __init__(self) -> None:
+        self.name = 'NeuralNetwork'
+        self.model = find_simple_network()
+        self.model.eval()
+    
+    def best_move(self, b):
+        potential_moves = b.moves()
+        best_move, best_value = potential_moves[0], 0 
+        for move in potential_moves:
+
+            if b.is_winning(move):
+                return move
+            
+            b.apply_move(move)
+            board_after_move = self.encode_board(b.board, b.hs)
+            b.undo_move(move)
+
+            with torch.no_grad():
+                x = torch.tensor(board_after_move)
+                x = x[None, :]
+
+                out = self.model(x)
+                value_for_this_move = out[0][1].item()
+
+            if value_for_this_move > best_value:
+                best_move  = move
+                best_value = value_for_this_move
+        return best_move  
+
+    
+    def encode_board(self, b, hs):
+        # potrzebuje:
+        # plansze z 1 i 2 w polach 
+        # wiedzieć kto zaczynał ?? 
+        #  kto ma teraz ruch? ja
+        # kim jestem graczem pierwszym czy drugim? 
+        # zliczyć mogę ile jest jedynek ile -1 tego czego mniej  - takie są moje pionki 
+        liczba_jedynke, liczba_minus_jedynek = 0, 0 
+        mapped_board = torch.zeros([6, 7])
+        for j in range(DY):
+            for i in range(DX):
+                print(f"{i, j} - {5-j, i}")
+                print(f"mb = {mapped_board[6-1-j][i]}")
+                print(f"b.shape = {len(b), len(b[0])}")
+                print(f"b = {b[i][j]}")
+                mapped_board[6-1-j][i] = b[i][j]
+                if b[i][j]==-1:
+                    mapped_board[6-1-j][i] = 2 
+                    liczba_minus_jedynek += 1 
+                if b[i][j]==1:
+                    liczba_jedynke += 1 
+
+        if liczba_jedynke > liczba_minus_jedynek:
+            ktorym_graczem_jestem = 1
+        else:
+            ktorym_graczem_jestem = 2 
+          
+        encoded_board = torch.zeros([8], dtype=torch.float32)
+        encoded_board[0] = 0 
+        if ktorym_graczem_jestem==1: encoded_board[1] = 2
+        if ktorym_graczem_jestem==2: encoded_board[1] = 1 
+        horiz, verti = self.compute_simple_triples(b, hs, winner=ktorym_graczem_jestem) 
+        encoded_board[2] = horiz
+        encoded_board[3] = verti
+        encoded_board[4] = self.compute_catty_corner_triples(b, hs, winner=ktorym_graczem_jestem)
+        encoded_board[5] = self.compute_verti_holes(b, winner=ktorym_graczem_jestem)
+        encoded_board[6] = self.compute_catty_corner_holes(b, winner=ktorym_graczem_jestem)
+        encoded_board[7] = self.compute_pairs(b, winner=ktorym_graczem_jestem)
         return encoded_board
         
     
