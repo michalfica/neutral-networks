@@ -65,7 +65,7 @@ class Model(nn.Module):
 
 
 def load_data(task=1):
-    amount_of_games = 20 
+    amount_of_games = 1000 
     moves_observed  = "all"
     print(f"loaduje dane: {amount_of_games} - tyle gier")
 
@@ -106,6 +106,27 @@ def initialize_weights(model):
             else:
                 raise Exception('weird parameter')
             
+def compute_error_rate(model, data_loader, device="cpu"):
+  model.eval()
+
+  num_errs, num_examples = 0, 0
+  with torch.no_grad():
+    for batch in data_loader:
+
+      x, y = batch[0].to(device), batch[1].to(device)
+      out = model(x)
+
+      _, pred = out.max(dim=1)
+      num_errs += (pred != y.data).sum().item()
+      num_examples += x.size(0)
+    
+#   print(f"parametry sieci: ")
+#   for _, p in model.named_parameters():
+#     print(p)
+
+  print(f"liczba pomyłek = {num_errs}, al liczba przykładów = {num_examples}")
+
+  return num_errs / num_examples
 
 def train(model, data_loaders, num_of_epochs, train_loader, opt, device="cpu"):
   model.train()
@@ -129,6 +150,9 @@ def train(model, data_loaders, num_of_epochs, train_loader, opt, device="cpu"):
       loss = nn.CrossEntropyLoss()(out, y)
       loss.backward()
       opt.step()
+    
+    val_err = compute_error_rate(model, data_loader=data_loaders["valid"], device=device)
+    return val_err
 
 def run_training(model, data_loaders):
     # -------------------------------------- task I ---------------------------------------------
@@ -157,14 +181,19 @@ def run_training(model, data_loaders):
     epochs = 3
     _device = "cpu"
     opt = torch.optim.SGD(model.parameters(), lr=lr, weight_decay = weight_decay, momentum = momentum)
-    train(model=model, data_loaders=data_loaders, num_of_epochs=epochs, train_loader=data_loaders["train"], opt=opt, device=_device)
+    return train(model=model, data_loaders=data_loaders, num_of_epochs=epochs, train_loader=data_loaders["train"], opt=opt, device=_device)
 
 
 def find_network():
     data_loaders = load_data()
     model = Model()
     initialize_weights(model)
-    run_training(model, data_loaders=data_loaders)
+    valid_error = run_training(model, data_loaders=data_loaders)
+    print(f"val_error = {valid_error}")
+    while valid_error > 0.33:
+        initialize_weights(model)
+        valid_error = run_training(model, data_loaders=data_loaders)
+        print(f"val_error = {valid_error}")
     return model 
 
 
@@ -173,6 +202,11 @@ def find_simple_network():
     model = Model()
     initialize_weights(model)
     print("zaczynam trening")
-    run_training(model, data_loaders=data_loaders)
+    valid_error = run_training(model, data_loaders=data_loaders)
+    print(f"val_error = {valid_error}")
+    while valid_error > 0.48:
+        initialize_weights(model)
+        valid_error = run_training(model, data_loaders=data_loaders)
+        print(f"val_error = {valid_error}")
     print("trenonwanie - DONE")
     return model 

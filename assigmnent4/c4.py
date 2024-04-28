@@ -136,17 +136,17 @@ class AgentSimpleNetwork:
         # zliczyć mogę ile jest jedynek ile -1 tego czego mniej  - takie są moje pionki 
         liczba_jedynke, liczba_minus_jedynek = 0, 0 
         mapped_board = torch.zeros([6, 7])
-        for j in range(DY):
-            for i in range(DX):
-                print(f"{i, j} - {5-j, i}")
-                print(f"mb = {mapped_board[6-1-j][i]}")
-                print(f"b.shape = {len(b), len(b[0])}")
-                print(f"b = {b[i][j]}")
-                mapped_board[6-1-j][i] = b[i][j]
-                if b[i][j]==-1:
-                    mapped_board[6-1-j][i] = 2 
+        for row in range(6):
+            for col in range(7):
+                # print(f"mb = {mapped_board[5-row][col]}")
+                # print(f"b.shape = {len(b), len(b[0])}")
+                # print(f"{row, col} - {5-row, col}")
+                # print(f"b = {b[row][col]}")
+                mapped_board[row][col] = b[5-row][col]
+                if b[5-row][col]==-1:
+                    mapped_board[row][col] = 2 
                     liczba_minus_jedynek += 1 
-                if b[i][j]==1:
+                if b[5-row][col]==1:
                     liczba_jedynke += 1 
 
         if liczba_jedynke > liczba_minus_jedynek:
@@ -158,13 +158,14 @@ class AgentSimpleNetwork:
         encoded_board[0] = 0 
         if ktorym_graczem_jestem==1: encoded_board[1] = 2
         if ktorym_graczem_jestem==2: encoded_board[1] = 1 
-        horiz, verti = self.compute_simple_triples(b, hs, winner=ktorym_graczem_jestem) 
+        helper_ = C4DataSet(10,10)
+        horiz, verti = helper_.compute_simple_triples(board=b, cnt=hs, winner=ktorym_graczem_jestem) 
         encoded_board[2] = horiz
         encoded_board[3] = verti
-        encoded_board[4] = self.compute_catty_corner_triples(b, hs, winner=ktorym_graczem_jestem)
-        encoded_board[5] = self.compute_verti_holes(b, winner=ktorym_graczem_jestem)
-        encoded_board[6] = self.compute_catty_corner_holes(b, winner=ktorym_graczem_jestem)
-        encoded_board[7] = self.compute_pairs(b, winner=ktorym_graczem_jestem)
+        encoded_board[4] = helper_.compute_catty_corner_triples(board=b, cnt=hs, winner=ktorym_graczem_jestem)
+        encoded_board[5] = helper_.compute_verti_holes(b, winner=ktorym_graczem_jestem)
+        encoded_board[6] = helper_.compute_catty_corner_holes(b, winner=ktorym_graczem_jestem)
+        encoded_board[7] = helper_.compute_pairs(b, winner=ktorym_graczem_jestem)
         return encoded_board
         
     

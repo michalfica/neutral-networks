@@ -35,8 +35,8 @@ def duel(agent_a, agent_b, N):
     for i in range(N):
         r1 = game(agent_a, agent_b)
         score[r1] += 1
-        # r2 = game(agent_b, agent_a)
-        # score[-r2] += 1
+        r2 = game(agent_b, agent_a)
+        score[-r2] += 1
     
     s = sum(score.values())
     
@@ -55,4 +55,4 @@ if __name__ == '__main__':
     #B = AgentMC(10)
     # B = AgentMinMaxMC(3,10)
     
-    duel(A, B, 400)    
+    duel(A, B, 1000)    
